@@ -1,0 +1,37 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "cppgdb",
+      "name": "with args",
+      "project": "CMakeLists.txt",
+      "projectTarget": "Project",
+      "comment": "Learn how to configure WSL debugging. For more info, see http://aka.ms/vslinuxdebug",
+      "debuggerConfiguration": "gdb",
+      "args": [
+        "-b 16384",
+        "-s 10",
+        "~/directory",
+        "~/kopia"
+      ],
+      "env": {}
+    },
+    {
+      "type": "cppgdb",
+      "name": "recursive",
+      "project": "CMakeLists.txt",
+      "projectTarget": "Project",
+      "comment": "Learn how to configure WSL debugging. For more info, see http://aka.ms/vslinuxdebug",
+      "debuggerConfiguration": "gdb",
+      "args": [
+        "-b 16384",
+        "-s 10",
+        "-R",
+        "~/directory",
+        "~/kopia"
+      ],
+      "env": {}
+    }
+  ]
+}

@@ -159,7 +159,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 	struct dirent** dest_files_list;
 	const int no_of_dest_files = scandir(destination_path, &dest_files_list, NULL, alphasort);
 
-	char* src, *dst;
+	char* src, * dst;
 
 	for (int i = 0; i < no_of_source_files; i++)
 	{
@@ -183,7 +183,6 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 			if (skip_location(dest_file_name))
 				continue;
 
-			free(dst);
 			dst = concat_path(destination_path, dest_file_name);
 
 			if (strcmp(source_file_name, dest_file_name) == 0)
@@ -215,6 +214,8 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 			copy_and_delete_all_files(src, dst, buffor_size);
 			copy_file_dates(src, dst);
 
+			free(dst);
+			free(src);
 			continue;
 		}
 
@@ -317,9 +318,10 @@ int main(int argc, char* argv[])
 				exit(EXIT_FAILURE);
 			}
 			break;
-		default: /* '?' */
+		default:
 			fprintf(stderr, "Usage: %s [-b size] [-s time] [-R] directory directory\n", argv[0]);
 			exit(EXIT_FAILURE);
+
 		}
 	}
 

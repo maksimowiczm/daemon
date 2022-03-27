@@ -36,6 +36,8 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 	stat(from, &st);
 	const ssize_t size = st.st_size;
 
+	syslog(LOG_INFO, "trying to copy %s to %s", from, to);
+
 	if (size > large_file_size_limit)
 	{
 		char* addr = mmap(NULL, size, PROT_READ, MAP_PRIVATE, src, 0);
@@ -62,6 +64,8 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 		free(buf);
 	}
 
+	syslog(LOG_INFO, "copied %s to %s", from, to);
+
 	int err = close(src);
 	if (err < 0)
 	{
@@ -81,6 +85,7 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 
 void delete_file(const char* path)
 {
+	syslog(LOG_INFO, "trying to delete %s", path);
 	const int err = remove(path);
 
 	if (err < 0)
@@ -88,6 +93,7 @@ void delete_file(const char* path)
 		printf("delete_file() %s %s", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+	syslog(LOG_INFO, "deleted %s", path);
 }
 
 void delete_directory(const char* path)
@@ -96,6 +102,7 @@ void delete_directory(const char* path)
 	const int no_of_files = scandir(path, &files_list, NULL, alphasort);
 	char* src;
 
+	syslog(LOG_INFO, "trying to delete directory %s", path);
 	for (int i = 0; i < no_of_files; i++)
 	{
 		const char* file_name = files_list[i]->d_name;
@@ -111,5 +118,6 @@ void delete_directory(const char* path)
 		free(src);
 	}
 
+	syslog(LOG_INFO, "deleted directory %s", path);
 	free(files_list);
 }

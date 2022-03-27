@@ -63,11 +63,12 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 			free(dst);
 			dst = concat_path(destination_path, source_file_name);
 
-			if (mkdir(dst, 0700) < 0)
-			{
-				printf("copy_and_delete_all_files() mkdir() %s %s", dst, strerror(errno));
-				exit(EXIT_FAILURE);
-			}
+			if (!opendir(dst))
+				if (mkdir(dst, 0700) < 0)
+				{
+					printf("copy_and_delete_all_files() mkdir() %s %s", dst, strerror(errno));
+					exit(EXIT_FAILURE);
+				}
 
 			copy_and_delete_all_files(src, dst, buffor_size, large_file_size_limit);
 			copy_file_dates(src, dst);

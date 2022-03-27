@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	int opt, sleep = 300;
+	int opt, sleep_time = 300;
 
 	ssize_t buffor_size = 16384,
 	        large_file_size_limit = 1048576;
@@ -171,8 +171,8 @@ int main(int argc, char* argv[])
 			}
 			break;
 		case 's':
-			sleep = atoi(optarg);
-			if (sleep <= 0)
+			sleep_time = atoi(optarg);
+			if (sleep_time <= 0)
 			{
 				fprintf(stderr, "Expected argument after option -s\n");
 				exit(EXIT_FAILURE);
@@ -204,7 +204,31 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	pid_t pid;
+	pid = fork();
+
+	if (pid < 0)
+		exit(EXIT_FAILURE);
+	else if (pid > 0)
+		exit(EXIT_SUCCESS);
+
+	const int ssid = setsid();
+	if (ssid < 0)
+		exit(EXIT_FAILURE);
+
+	pid = fork();
+
+	if (pid < 0)
+		exit(EXIT_FAILURE);
+	else if (pid > 0)
+		exit(EXIT_SUCCESS);
+
+	syslog(LOG_INFO, "Starting daemon. Sleeping for %d seconds", sleep_time);
+	sleep(sleep_time);
+
+	syslog(LOG_INFO, "Starting copying");
 	copy_and_delete_all_files(argv[optind], argv[optind + 1], buffor_size, large_file_size_limit);
+	syslog(LOG_INFO, "Copied");
 
 	exit(EXIT_SUCCESS);
 }

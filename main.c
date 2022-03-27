@@ -74,7 +74,7 @@ void copy_file_dates(const char* from, const char* to)
 	}
 }
 
-void copy_file(const char* from, const char* to, const ssize_t buffor)
+void copy_file(const char* from, const char* to, const ssize_t buffor, const ssize_t large_file_size_limit)
 {
 	const int src = open(from, O_RDONLY);
 	if (src < 0)
@@ -89,15 +89,34 @@ void copy_file(const char* from, const char* to, const ssize_t buffor)
 		exit(EXIT_FAILURE);
 	}
 
-	void* buf = malloc(buffor);
-	ssize_t bytes_read = read(src, buf, buffor);
+	struct stat st;
+	stat(from, &st);
+	const ssize_t size = st.st_size;
 
-	do
+	if (size > large_file_size_limit)
 	{
-		write(dst, buf, bytes_read);
-	} while ((bytes_read = read(src, buf, buffor)) != 0);
+		char* addr = mmap(NULL, size, PROT_READ, MAP_PRIVATE, src, 0);
+		if (addr == MAP_FAILED)
+		{
+			printf("copy_file() mmap() %s", from);
+			exit(EXIT_FAILURE);
+		}
 
-	free(buf);
+		write(dst, addr, size);
+		munmap(addr, size);
+	}
+	else
+	{
+		void* buf = malloc(buffor);
+		ssize_t bytes_read = read(src, buf, buffor);
+
+		do
+		{
+			write(dst, buf, bytes_read);
+		} while ((bytes_read = read(src, buf, buffor)) != 0);
+
+		free(buf);
+	}
 
 	int err = close(src);
 	if (err < 0)
@@ -151,7 +170,7 @@ void delete_directory(const char* path)
 	free(files_list);
 }
 
-void copy_and_delete_all_files(const char* source_path, const char* destination_path, const int buffor_size)
+void copy_and_delete_all_files(const char* source_path, const char* destination_path, const ssize_t buffor_size, const ssize_t large_file_size_limit)
 {
 	struct dirent** source_files_list;
 	const int no_of_source_files = scandir(source_path, &source_files_list, NULL, alphasort);
@@ -211,7 +230,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 				exit(EXIT_FAILURE);
 			}
 
-			copy_and_delete_all_files(src, dst, buffor_size);
+			copy_and_delete_all_files(src, dst, buffor_size, large_file_size_limit);
 			copy_file_dates(src, dst);
 
 			free(dst);
@@ -222,13 +241,13 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 		if (was)
 		{
 			delete_file(dst);
-			copy_file(src, dst, buffor_size);
+			copy_file(src, dst, buffor_size, large_file_size_limit);
 		}
 		else
 		{
 			free(dst);
 			dst = concat_path(destination_path, source_file_name);
-			copy_file(src, dst, buffor_size);
+			copy_file(src, dst, buffor_size, large_file_size_limit);
 		}
 
 		free(src);
@@ -293,9 +312,10 @@ int main(int argc, char* argv[])
 
 	int opt, sleep = 300;
 
-	ssize_t buffor_size = 16384;
+	ssize_t buffor_size = 16384,
+		large_file_size_limit = 1048576;
 
-	while ((opt = getopt(argc, argv, "Rb:s:")) != -1)
+	while ((opt = getopt(argc, argv, "Rb:s:l:")) != -1)
 	{
 		switch (opt)
 		{
@@ -318,8 +338,16 @@ int main(int argc, char* argv[])
 				exit(EXIT_FAILURE);
 			}
 			break;
+		case 'l':
+			large_file_size_limit = atoi(optarg);
+			if (large_file_size_limit <= 0)
+			{
+				fprintf(stderr, "Expected argument after option -l\n");
+				exit(EXIT_FAILURE);
+			}
+			break;
 		default:
-			fprintf(stderr, "Usage: %s [-b size] [-s time] [-R] directory directory\n", argv[0]);
+			fprintf(stderr, "Usage: %s [-b size] [-s time] [-l size] [-R] directory directory\n", argv[0]);
 			exit(EXIT_FAILURE);
 
 		}
@@ -337,7 +365,7 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	copy_and_delete_all_files(argv[optind], argv[optind + 1], buffor_size);
+	copy_and_delete_all_files(argv[optind], argv[optind + 1], buffor_size, large_file_size_limit);
 
 	exit(EXIT_SUCCESS);
 }

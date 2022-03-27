@@ -142,6 +142,12 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 	free(source_files_list);
 }
 
+void handle_signal(const int signum)
+{
+	if (signum == SIGUSR1)
+		syslog(LOG_INFO, "SIGUSR1");
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc < 3)
@@ -204,8 +210,7 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	pid_t pid;
-	pid = fork();
+	pid_t pid = fork();
 
 	if (pid < 0)
 		exit(EXIT_FAILURE);
@@ -222,6 +227,10 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	else if (pid > 0)
 		exit(EXIT_SUCCESS);
+
+	bool runt = false;
+
+	signal(SIGUSR1, handle_signal);
 
 	syslog(LOG_INFO, "Starting daemon. Sleeping for %d seconds", sleep_time);
 	sleep(sleep_time);

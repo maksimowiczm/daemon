@@ -7,5 +7,4 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <syslog.h>
-#include <stdbool.h>
 #include <signal.h>

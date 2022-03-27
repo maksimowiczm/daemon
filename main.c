@@ -228,8 +228,6 @@ int main(int argc, char* argv[])
 	else if (pid > 0)
 		exit(EXIT_SUCCESS);
 
-	bool runt = false;
-
 	signal(SIGUSR1, handle_signal);
 
 	syslog(LOG_INFO, "Starting daemon. Sleeping for %d seconds", sleep_time);

@@ -66,7 +66,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 			if (!opendir(dst))
 				if (mkdir(dst, 0700) < 0)
 				{
-					printf("copy_and_delete_all_files() mkdir() %s %s", dst, strerror(errno));
+					fprintf(stderr, "copy_and_delete_all_files() mkdir() %s %s", dst, strerror(errno));
 					exit(EXIT_FAILURE);
 				}
 
@@ -202,13 +202,13 @@ int main(int argc, char* argv[])
 
 	if (is_regular_file(argv[optind], 0))
 	{
-		printf("%s nie jest folderem\n", argv[optind]);
+		fprintf(stderr, "%s nie jest folderem\n", argv[optind]);
 		exit(EXIT_FAILURE);
 	}
 
 	if (is_regular_file(argv[optind + 1], 0))
 	{
-		printf("%s nie jest folderem\n", argv[optind + 1]);
+		fprintf(stderr, "%s nie jest folderem\n", argv[optind + 1]);
 		exit(EXIT_FAILURE);
 	}
 

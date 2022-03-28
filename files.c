@@ -12,7 +12,7 @@ void copy_file_dates(const char* from, const char* to)
 	const int err = utime(to, &ubuf);
 	if (err < 0)
 	{
-		printf("copy_file_dates() utime() %s %s %s", from, to, strerror(errno));
+		fprintf(stderr, "copy_file_dates() utime() %s %s %s", from, to, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 }
@@ -22,13 +22,13 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 	const int src = open(from, O_RDONLY);
 	if (src < 0)
 	{
-		printf("copy_file() open(from) %s %s", from, strerror(errno));
+		fprintf(stderr, "copy_file() open(from) %s %s", from, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	const int dst = open(to, O_WRONLY | O_CREAT | O_APPEND, 0666);
 	if (dst < 0)
 	{
-		printf("copy_file() open(to) %s %s", to, strerror(errno));
+		fprintf(stderr, "copy_file() open(to) %s %s", to, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -43,7 +43,7 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 		char* addr = mmap(NULL, size, PROT_READ, MAP_PRIVATE, src, 0);
 		if (addr == MAP_FAILED)
 		{
-			printf("copy_file() mmap() %s", from);
+			fprintf(stderr, "copy_file() mmap() %s", from);
 			exit(EXIT_FAILURE);
 		}
 
@@ -69,13 +69,13 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 	int err = close(src);
 	if (err < 0)
 	{
-		printf("copy_file() close(src) %s", strerror(errno));
+		fprintf(stderr, "copy_file() close(src) %s", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	err = close(dst);
 	if (err < 0)
 	{
-		printf("copy_file() close(dst) %s", strerror(errno));
+		fprintf(stderr, "copy_file() close(dst) %s", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -90,7 +90,7 @@ void delete_file(const char* path)
 
 	if (err < 0)
 	{
-		printf("delete_file() %s %s", path, strerror(errno));
+		fprintf(stderr, "delete_file() %s %s", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	syslog(LOG_INFO, "deleted %s", path);

@@ -1,4 +1,4 @@
-#include "files.h"
+﻿#include "files.h"
 #include "headers.h"
 #include "utils.h"
 
@@ -11,79 +11,80 @@ enum
 void copy_and_delete_all_files(const char* source_path, const char* destination_path, const ssize_t buffor_size,
                                const ssize_t large_file_size_limit)
 {
-	struct dirent** source_files_list;
+	struct dirent** source_files_list; // Lista plików w folderze źródłowym
+	// Ilość plików w folderze źródłowym
 	const int no_of_source_files = scandir(source_path, &source_files_list, NULL, alphasort);
 
-	struct dirent** dest_files_list;
+	struct dirent** dest_files_list; // Lista plików w folderze docelowym
+	// Ilość plików w folderze docelowym
 	const int no_of_dest_files = scandir(destination_path, &dest_files_list, NULL, alphasort);
 
-	char *src, *dst;
+	char *src, *dst; // Ścieżki do plików
 
-	for (int i = 0; i < no_of_source_files; i++)
+	for (int i = 0; i < no_of_source_files; i++) // Wszystkie pliki w folderze źródłowym są sprawdzane
 	{
-		const char* source_file_name = source_files_list[i]->d_name;
+		const char* source_file_name = source_files_list[i]->d_name; // Nazwa pliku źródłowego
 
-		if (skip_location(source_file_name))
+		if (skip_location(source_file_name)) // Foldery "." ".." są omijane
 			continue;
 
-		if (mode == DEFAULT && is_directory(source_files_list[i]))
+		if (mode == DEFAULT && is_directory(source_files_list[i])) // W trybie domyślnym foldery sa omijane
 			continue;
 
-		src = concat_path(source_path, source_file_name);
-		dst = concat_path(destination_path, source_file_name);
+		src = concat_path(source_path, source_file_name); // Ścieżka do pliku źródłowego
+		dst = concat_path(destination_path, source_file_name); // Ścieżka do pliku docelowego
 
-		int copy = 1, was = 0;
-
-		for (int j = 0; j < no_of_dest_files; j++)
+		if (mode == RECURSIVE && is_directory(source_files_list[i])) // W trybie rekursywnym fodlery są kopiowane
 		{
-			const char* dest_file_name = dest_files_list[j]->d_name;
-
-			if (skip_location(dest_file_name))
-				continue;
-
-			dst = concat_path(destination_path, dest_file_name);
-
-			if (strcmp(source_file_name, dest_file_name) == 0)
-			{
-				was = 1;
-				const long time = compare_files_times(src, dst);
-
-				if (!time)
-					copy = 0;
-
-				break;
-			}
-		}
-
-		if (!copy)
-			continue;
-
-		if (is_directory(source_files_list[i]) && mode == RECURSIVE)
-		{
-			free(dst);
-			dst = concat_path(destination_path, source_file_name);
-
-			if (!opendir(dst))
-				if (mkdir(dst, 0700) < 0)
+			if (!opendir(dst)) // Sprawdza czy folder istnieje
+				if (mkdir(dst, 0700) < 0) // Jeśli nie istnieje tworzy nowy folder o takiej samej nazwie
 				{
 					fprintf(stderr, "copy_and_delete_all_files() mkdir() %s %s", dst, strerror(errno));
 					exit(EXIT_FAILURE);
 				}
 
 			copy_and_delete_all_files(src, dst, buffor_size, large_file_size_limit);
-			copy_file_dates(src, dst);
+			//Uruchomianie rekurencyjne funcji dla folderu
+			copy_file_dates(src, dst); // Zmiana daty modyfikacji po skopiowaniu na prawdiłową
 
 			free(dst);
 			free(src);
 			continue;
 		}
 
-		if (was)
+		// Zmienne do zapisania informacji czy plik będzie kopiowany i czy istnieje w folderze docelowym
+		int copy = 1, was = 0;
+
+		for (int j = 0; j < no_of_dest_files; j++) // Wszystkie pliki w folderze docelowym są sprawdzane
 		{
-			delete_file(dst);
-			copy_file(src, dst, buffor_size, large_file_size_limit);
+			const char* dest_file_name = dest_files_list[j]->d_name; // Nazwa pliku docelowego
+
+			if (skip_location(dest_file_name)) // Foldery "." ".." są omijane
+				continue;
+
+			dst = concat_path(destination_path, dest_file_name); // Ścieżka do pliku docelowego
+
+			if (strcmp(source_file_name, dest_file_name) == 0) // Sprawdza czy pliki mają taką samą nazwę
+			{
+				was = 1; // Ustala czy plik był w folderze docelowym
+				const long time = compare_files_times(src, dst); // Porównuje czasy modyfikacji plików
+
+				if (!time) // Jeśli pliki są identyczne nie są kopiowane
+					copy = 0;
+
+				break; // Po znalezieniu pliku z identyczną nazwą pętla przeszukująca folder docelowy kończy się
+			}
 		}
-		else
+
+		if (!copy)
+			continue;
+
+		if (was) // Jeśli plik istnieje w folderze docelowym
+		{
+			delete_file(dst); // Istniejący plik jest usuwany
+			copy_file(src, dst, buffor_size, large_file_size_limit); // i kopiowany
+		}
+		else // W przeciwnym wypadku jest tylko kopiowany
 		{
 			free(dst);
 			dst = concat_path(destination_path, source_file_name);
@@ -94,35 +95,37 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 		free(dst);
 	}
 
-	for (int i = 0; i < no_of_dest_files; i++)
+	for (int i = 0; i < no_of_dest_files; i++) // Wszystkie pliki w folderze docelowym są sprawdzane
 	{
-		const char* dest_file_name = dest_files_list[i]->d_name;
+		const char* dest_file_name = dest_files_list[i]->d_name; // Nazwa pliku w folderze docelowym
 
-		if (skip_location(dest_file_name))
+		if (skip_location(dest_file_name)) // Foldery "." ".." są omijane
 			continue;
 
-		if (mode == DEFAULT && is_directory(dest_files_list[i]))
+		if (mode == DEFAULT && is_directory(dest_files_list[i])) // W trybie domyślnym foldery sa omijane
 			continue;
 
-		int delete = 1;
-		dst = concat_path(destination_path, dest_file_name);
+		int delete = 1; // Zmienna zapisująca informację o tym czy plik będzie usuwany
+		dst = concat_path(destination_path, dest_file_name); // Ścieżka do pliku
 
-		for (int j = 0; j < no_of_source_files; j++)
+		for (int j = 0; j < no_of_source_files; j++) // Wszystkie pliki w folderze źródłowym są sprawdzane
 		{
-			const char* source_file_name = source_files_list[j]->d_name;
+			const char* source_file_name = source_files_list[j]->d_name; // Nazwa pliku w folderze źródłowym
 
-			if (skip_location(source_file_name))
+			if (skip_location(source_file_name)) // Foldery "." ".." są omijane
 				continue;
 
+			// Jeśli plik o tej nazwie istnieje w folderze źródłowym to plik nie jest usuwany
 			if (strcmp(source_file_name, dest_file_name) == 0)
 			{
 				delete = 0;
-				break;
+				break; // Po znalezieniu pliku z identyczną nazwą pętla przeszukująca folder źródłowy kończy się
 			}
 		}
 
 		if (delete)
 		{
+			// W zależności czy plik jest folderem czy zwykłym plikiem odpowiednie funkcje są uruchamiane
 			if (!is_regular_file(dst, 1))
 				delete_directory(dst);
 
@@ -132,6 +135,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 		free(dst);
 	}
 
+	// Zwalnanie pamięci
 	for (int i = 0; i < no_of_source_files; i++)
 		free(source_files_list[i]);
 

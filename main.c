@@ -44,7 +44,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 				}
 
 			copy_and_delete_all_files(src, dst, buffor_size, large_file_size_limit);
-			//Uruchomianie rekurencyjne funcji dla folderu
+			// Uruchomianie rekurencyjne funcji dla folderu
 			copy_file_dates(src, dst); // Zmiana daty modyfikacji po skopiowaniu na prawdiłową
 
 			free(dst);
@@ -62,6 +62,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 			if (skip_location(dest_file_name)) // Foldery "." ".." są omijane
 				continue;
 
+			free(dst);
 			dst = concat_path(destination_path, dest_file_name); // Ścieżka do pliku docelowego
 
 			if (strcmp(source_file_name, dest_file_name) == 0) // Sprawdza czy pliki mają taką samą nazwę
@@ -77,7 +78,11 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 		}
 
 		if (!copy)
+		{
+			free(src);
+			free(dst);
 			continue;
+		}
 
 		if (was) // Jeśli plik istnieje w folderze docelowym
 		{
@@ -106,8 +111,6 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 			continue;
 
 		int delete = 1; // Zmienna zapisująca informację o tym czy plik będzie usuwany
-		dst = concat_path(destination_path, dest_file_name); // Ścieżka do pliku
-
 		for (int j = 0; j < no_of_source_files; j++) // Wszystkie pliki w folderze źródłowym są sprawdzane
 		{
 			const char* source_file_name = source_files_list[j]->d_name; // Nazwa pliku w folderze źródłowym
@@ -123,6 +126,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 			}
 		}
 
+		dst = concat_path(destination_path, dest_file_name); // Ścieżka do pliku
 		if (delete)
 		{
 			// W zależności czy plik jest folderem czy zwykłym plikiem odpowiednie funkcje są uruchamiane

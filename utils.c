@@ -5,13 +5,16 @@ int is_directory(const struct dirent* dir)
 	return dir->d_type == DT_DIR;
 }
 
-int is_regular_file(const char* path)
+int is_regular_file(const char* path, const int error)
 {
 	struct stat path_stat;
 	const int err = stat(path, &path_stat);
 
 	if (err == -1)
 	{
+		if (!error)
+			return -1;
+
 		printf("is_regular_file() %s %s", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}

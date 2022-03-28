@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	/*pid_t pid = fork();
+	pid_t pid = fork();
 
 	if (pid < 0)
 		exit(EXIT_FAILURE);
@@ -243,7 +243,7 @@ int main(int argc, char* argv[])
 	signal(SIGUSR1, handle_signal);
 
 	syslog(LOG_INFO, "Starting daemon. Sleeping for %d seconds", sleep_time);
-	sleep(sleep_time);*/
+	sleep(sleep_time);
 
 	syslog(LOG_INFO, "Starting copying");
 	copy_and_delete_all_files(argv[optind], argv[optind + 1], buffor_size, large_file_size_limit);

@@ -36,13 +36,15 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 
 		if (mode == RECURSIVE && is_directory(source_files_list[i])) // W trybie rekursywnym fodlery są kopiowane
 		{
-			if (!opendir(dst)) // Sprawdza czy folder istnieje
+			DIR* dir = opendir(dst);
+			if (!dir) // Sprawdza czy folder istnieje
 				if (mkdir(dst, 0700) < 0) // Jeśli nie istnieje tworzy nowy folder o takiej samej nazwie
 				{
 					fprintf(stderr, "copy_and_delete_all_files() mkdir() %s %s", dst, strerror(errno));
 					exit(EXIT_FAILURE);
 				}
 
+			free(dir);
 			copy_and_delete_all_files(src, dst, buffor_size, large_file_size_limit);
 			// Uruchomianie rekurencyjne funcji dla folderu
 			copy_file_dates(src, dst); // Zmiana daty modyfikacji po skopiowaniu na prawdiłową
@@ -220,7 +222,7 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	pid_t pid = fork();
+	/*pid_t pid = fork();
 
 	if (pid < 0)
 		exit(EXIT_FAILURE);
@@ -241,7 +243,7 @@ int main(int argc, char* argv[])
 	signal(SIGUSR1, handle_signal);
 
 	syslog(LOG_INFO, "Starting daemon. Sleeping for %d seconds", sleep_time);
-	sleep(sleep_time);
+	sleep(sleep_time);*/
 
 	syslog(LOG_INFO, "Starting copying");
 	copy_and_delete_all_files(argv[optind], argv[optind + 1], buffor_size, large_file_size_limit);

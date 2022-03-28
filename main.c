@@ -123,7 +123,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 
 		if (delete)
 		{
-			if (!is_regular_file(dst))
+			if (!is_regular_file(dst, 1))
 				delete_directory(dst);
 
 			delete_file(dst);
@@ -152,7 +152,8 @@ int main(int argc, char* argv[])
 {
 	if (argc < 3)
 	{
-		printf("Za malo argumentow\n");
+		fprintf(stderr, "Usage: %s [-b size] [-s time] [-l size] [-R] source_directory destination_directory\n",
+		        argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -193,18 +194,19 @@ int main(int argc, char* argv[])
 			}
 			break;
 		default:
-			fprintf(stderr, "Usage: %s [-b size] [-s time] [-l size] [-R] directory directory\n", argv[0]);
+			fprintf(stderr, "Usage: %s [-b size] [-s time] [-l size] [-R] source_directory destination_directory\n",
+			        argv[0]);
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	if (is_regular_file(argv[optind]))
+	if (is_regular_file(argv[optind], 0))
 	{
 		printf("%s nie jest folderem\n", argv[optind]);
 		exit(EXIT_FAILURE);
 	}
 
-	if (is_regular_file(argv[optind + 1]))
+	if (is_regular_file(argv[optind + 1], 0))
 	{
 		printf("%s nie jest folderem\n", argv[optind + 1]);
 		exit(EXIT_FAILURE);
@@ -236,6 +238,7 @@ int main(int argc, char* argv[])
 	syslog(LOG_INFO, "Starting copying");
 	copy_and_delete_all_files(argv[optind], argv[optind + 1], buffor_size, large_file_size_limit);
 	syslog(LOG_INFO, "Copied");
+	syslog(LOG_INFO, "Exiting daemon");
 
 	exit(EXIT_SUCCESS);
 }

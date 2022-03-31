@@ -25,15 +25,17 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 		fprintf(stderr, "copy_file() open(from) %s %s", from, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-	const int dst = open(to, O_WRONLY | O_CREAT | O_APPEND, 0666);
+
+	struct stat st;
+	stat(from, &st);
+	const int prem = get_premission(from);
+
+	const int dst = open(to, O_WRONLY | O_CREAT | O_APPEND, prem);
 	if (dst < 0)
 	{
 		fprintf(stderr, "copy_file() open(to) %s %s", to, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-
-	struct stat st;
-	stat(from, &st);
 	const ssize_t size = st.st_size;
 
 	syslog(LOG_INFO, "trying to copy %s to %s", from, to);
@@ -81,6 +83,17 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 
 	// Zmiana daty modyfikacji pliku
 	copy_file_dates(from, to);
+}
+
+int get_premission(const char* path)
+{
+	struct stat st;
+	stat(path, &st);
+	mode_t perm = st.st_mode;
+
+	return (perm & S_IRUSR) | (perm & S_IWUSR) | (perm & S_IXUSR)
+		| (perm & S_IRGRP) | (perm & S_IWGRP) | (perm & S_IXGRP)
+		| (perm & S_IROTH) | (perm & S_IWOTH) | (perm & S_IXOTH);
 }
 
 void delete_file(const char* path)

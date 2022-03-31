@@ -38,11 +38,14 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 		{
 			DIR* dir = opendir(dst);
 			if (!dir) // Sprawdza czy folder istnieje
-				if (mkdir(dst, 0700) < 0) // Jeśli nie istnieje tworzy nowy folder o takiej samej nazwie
+			{
+				const int prem = get_premission(src);
+				if (mkdir(dst, prem) < 0) // Jeśli nie istnieje tworzy nowy folder o takiej samej nazwie i uprawnieniach
 				{
 					fprintf(stderr, "copy_and_delete_all_files() mkdir() %s %s", dst, strerror(errno));
 					exit(EXIT_FAILURE);
 				}
+			}
 
 			free(dir);
 			copy_and_delete_all_files(src, dst, buffor_size, large_file_size_limit);

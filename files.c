@@ -26,16 +26,16 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 		exit(EXIT_FAILURE);
 	}
 
-	struct stat st;
-	stat(from, &st);
 	const int prem = get_premission(from);
-
 	const int dst = open(to, O_WRONLY | O_CREAT | O_APPEND, prem);
 	if (dst < 0)
 	{
 		fprintf(stderr, "copy_file() open(to) %s %s", to, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+
+	struct stat st;
+	stat(from, &st);
 	const ssize_t size = st.st_size;
 
 	syslog(LOG_INFO, "trying to copy %s to %s", from, to);

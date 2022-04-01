@@ -26,7 +26,7 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 		exit(EXIT_FAILURE);
 	}
 
-	const int prem = get_premission(from);
+	const int prem = get_permission(from);
 	const int dst = open(to, O_WRONLY | O_CREAT | O_APPEND, prem);
 	if (dst < 0)
 	{
@@ -85,7 +85,7 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 	copy_file_dates(from, to);
 }
 
-int get_premission(const char* path)
+int get_permission(const char* path)
 {
 	struct stat st;
 	stat(path, &st);

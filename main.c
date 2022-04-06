@@ -225,18 +225,7 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	pid_t pid = fork();
-
-	if (pid < 0)
-		exit(EXIT_FAILURE);
-	else if (pid > 0)
-		exit(EXIT_SUCCESS);
-
-	const int ssid = setsid();
-	if (ssid < 0)
-		exit(EXIT_FAILURE);
-
-	pid = fork();
+	const pid_t pid = fork();
 
 	if (pid < 0)
 		exit(EXIT_FAILURE);

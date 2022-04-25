@@ -47,6 +47,8 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 					fprintf(stderr, "copy_and_delete_all_files() mkdir() %s %s", dst, strerror(errno));
 					exit(EXIT_FAILURE);
 				}
+
+				syslog(LOG_INFO, "Utworzono folder %s", dst);
 			}
 
 			free(dir);

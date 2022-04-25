@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
 	}
 
 	// Stworzenie demona
-	/*pid_t pid = fork();
+	pid_t pid = fork();
 
 	if (pid < 0)
 		exit(EXIT_FAILURE);
@@ -248,7 +248,7 @@ int main(int argc, char* argv[])
 	if (pid < 0)
 		exit(EXIT_FAILURE);
 	else if (pid > 0)
-		exit(EXIT_SUCCESS);*/
+		exit(EXIT_SUCCESS);
 
 
 	signal(SIGUSR1, handle_signal);

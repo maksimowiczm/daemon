@@ -2,6 +2,7 @@
 #include "headers.h"
 #include "utils.h"
 
+// Tryby działania programu
 enum
 {
 	DEFAULT,
@@ -233,7 +234,7 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	else if (pid > 0)
 	{
-		wait(NULL);
+		wait(NULL); // Oczekiwanie aż proces potomny zakończy działanie
 		syslog(LOG_INFO, "Koniec demona.");
 		exit(EXIT_SUCCESS);
 	}

@@ -232,16 +232,24 @@ int main(int argc, char* argv[])
 	}
 
 	// Stworzenie demona
-	const pid_t pid = fork();
+	pid_t pid = fork();
 
 	if (pid < 0)
 		exit(EXIT_FAILURE);
 	else if (pid > 0)
-	{
-		wait(NULL); // Oczekiwanie aż proces potomny zakończy działanie
-		send_syslog(LOG_INFO, "%s", "Koniec demona.");
 		exit(EXIT_SUCCESS);
-	}
+
+	const int ssid = setsid();
+	if (ssid < 0)
+		exit(EXIT_FAILURE);
+
+	pid = fork();
+
+	if (pid < 0)
+		exit(EXIT_FAILURE);
+	else if (pid > 0)
+		exit(EXIT_SUCCESS);
+
 
 	signal(SIGUSR1, handle_signal);
 
@@ -250,7 +258,7 @@ int main(int argc, char* argv[])
 
 	send_syslog(LOG_INFO, "%s", "Start kopiowania");
 	copy_and_delete_all_files(argv[optind], argv[optind + 1], buffor_size, large_file_size_limit);
-	send_syslog(LOG_INFO, "%s", "Skopiowane.");
+	send_syslog(LOG_INFO, "%s", "Skopiowane. Koniec demona.");
 
 	exit(EXIT_SUCCESS);
 }

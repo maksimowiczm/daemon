@@ -48,7 +48,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 					exit(EXIT_FAILURE);
 				}
 
-				syslog(LOG_INFO, "Utworzono folder %s", dst);
+				send_syslog(LOG_INFO, "Utworzono folder %s", dst);
 			}
 
 			free(dir);
@@ -163,7 +163,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 void handle_signal(const int signum)
 {
 	if (signum == SIGUSR1)
-		syslog(LOG_INFO, "SIGUSR1");
+		send_syslog(LOG_INFO, "%s", "SIGUSR1");
 }
 
 int main(int argc, char* argv[])
@@ -239,18 +239,18 @@ int main(int argc, char* argv[])
 	else if (pid > 0)
 	{
 		wait(NULL); // Oczekiwanie aż proces potomny zakończy działanie
-		syslog(LOG_INFO, "Koniec demona.");
+		send_syslog(LOG_INFO, "%s", "Koniec demona.");
 		exit(EXIT_SUCCESS);
 	}
 
 	signal(SIGUSR1, handle_signal);
 
-	syslog(LOG_INFO, "Start demona. Uspanie na %d sekund", sleep_time);
+	send_syslog(LOG_INFO, "Start demona. Uspanie na %d sekund", sleep_time);
 	sleep(sleep_time);
 
-	syslog(LOG_INFO, "Start kopiowania");
+	send_syslog(LOG_INFO, "%s", "Start kopiowania");
 	copy_and_delete_all_files(argv[optind], argv[optind + 1], buffor_size, large_file_size_limit);
-	syslog(LOG_INFO, "Skopiowane.");
+	send_syslog(LOG_INFO, "%s", "Skopiowane.");
 
 	exit(EXIT_SUCCESS);
 }

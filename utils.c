@@ -1,5 +1,14 @@
 ﻿#include "utils.h"
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <stdarg.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/syslog.h>
+#include <time.h>
+
 int is_directory(const struct dirent* dir)
 {
 	return dir->d_type == DT_DIR;
@@ -63,4 +72,21 @@ long compare_files_times(const char* file1, const char* file2)
 	const long time2 = stat2.st_mtime;
 
 	return time1 - time2;
+}
+
+void send_syslog(const int type, const char* format, ...)
+{
+	char buffer[1024];
+	va_list args;
+	va_start(args, format);
+	vsprintf(buffer, format, args);
+	va_end(args);
+
+	time_t rawtime;
+	time(&rawtime);
+	const struct tm* ti = localtime(&rawtime);
+
+	syslog(type, "%d.%d.%d-%d:%d:%d %s",
+	       ti->tm_mday, ti->tm_mon + 1, ti->tm_year + 1900,
+	       ti->tm_hour, ti->tm_min, ti->tm_sec, buffer);
 }

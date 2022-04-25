@@ -1,4 +1,4 @@
-#include "utils.h"
+﻿#include "utils.h"
 
 int is_directory(const struct dirent* dir)
 {
@@ -22,6 +22,8 @@ int is_regular_file(const char* path, const int error)
 	return S_ISREG(path_stat.st_mode);
 }
 
+// Łączy dwa łańcuchy znaków w jeden
+// "/home/user" + "file.txt" = "/home/user/file.txt"
 char* concat_path(const char* source, const char* file)
 {
 	char* path = malloc(strlen(source) + strlen(file) + 2);
@@ -34,11 +36,13 @@ char* concat_path(const char* source, const char* file)
 	return path;
 }
 
+// Sprawdza czy plik nazywa się "." lub ".."
 int skip_location(const char* name)
 {
 	return strcmp(name, ".") == 0 || strcmp(name, "..") == 0;
 }
 
+// Zwraca różnicę pomiędzy czasami modyfikacji plików
 long compare_files_times(const char* file1, const char* file2)
 {
 	struct stat stat1;

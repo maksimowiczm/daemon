@@ -232,7 +232,11 @@ int main(int argc, char* argv[])
 	if (pid < 0)
 		exit(EXIT_FAILURE);
 	else if (pid > 0)
+	{
+		wait(NULL);
+		syslog(LOG_INFO, "Koniec demona.");
 		exit(EXIT_SUCCESS);
+	}
 
 	signal(SIGUSR1, handle_signal);
 
@@ -241,7 +245,7 @@ int main(int argc, char* argv[])
 
 	syslog(LOG_INFO, "Start kopiowania");
 	copy_and_delete_all_files(argv[optind], argv[optind + 1], buffor_size, large_file_size_limit);
-	syslog(LOG_INFO, "Skopiowane. Koniec demona.");
+	syslog(LOG_INFO, "Skopiowane.");
 
 	exit(EXIT_SUCCESS);
 }

@@ -1,6 +1,18 @@
 ﻿#include "files.h"
 #include "utils.h"
 
+#include <fcntl.h>
+#include <stdio.h>
+#include <dirent.h>
+#include <errno.h>
+#include <utime.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <unistd.h>
+#include <syslog.h>
+
 // Kopiuje czas modyfikacji pliku do innego pliku
 void copy_file_dates(const char* from, const char* to)
 {

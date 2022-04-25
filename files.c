@@ -1,4 +1,4 @@
-#include "files.h"
+﻿#include "files.h"
 #include "utils.h"
 
 // Kopiuje czas modyfikacji pliku do innego pliku
@@ -41,7 +41,7 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 
 	syslog(LOG_INFO, "trying to copy %s to %s", from, to);
 
-	if (size > large_file_size_limit)
+	if (size > large_file_size_limit) // Kopiowanie dużego pliku za pomocą munmap
 	{
 		char* addr = mmap(NULL, size, PROT_READ, MAP_PRIVATE, src, 0);
 		if (addr == MAP_FAILED)
@@ -53,7 +53,7 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 		write(dst, addr, size);
 		munmap(addr, size);
 	}
-	else
+	else // Kopiowanie za pomocą write
 	{
 		void* buf = malloc(buffor);
 		ssize_t bytes_read = read(src, buf, buffor);
@@ -125,7 +125,7 @@ void delete_directory(const char* path)
 			continue;
 
 		src = concat_path(path, file_name);
-		// Rekurencyjne kasowanie folder�w
+		// Rekurencyjne kasowanie folderów
 		if (is_directory(files_list[i]))
 			delete_directory(src);
 

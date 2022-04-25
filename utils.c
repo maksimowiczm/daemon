@@ -31,6 +31,17 @@ int is_regular_file(const char* path, const int error)
 	return S_ISREG(path_stat.st_mode);
 }
 
+int get_permission(const char* path)
+{
+	struct stat st;
+	stat(path, &st);
+	mode_t perm = st.st_mode;
+
+	return (perm & S_IRUSR) | (perm & S_IWUSR) | (perm & S_IXUSR)
+		| (perm & S_IRGRP) | (perm & S_IWGRP) | (perm & S_IXGRP)
+		| (perm & S_IROTH) | (perm & S_IWOTH) | (perm & S_IXOTH);
+}
+
 // Łączy dwa łańcuchy znaków w jeden
 // "/home/user" + "file.txt" = "/home/user/file.txt"
 char* concat_path(const char* source, const char* file)

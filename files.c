@@ -86,17 +86,6 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 	copy_file_dates(from, to);
 }
 
-int get_permission(const char* path)
-{
-	struct stat st;
-	stat(path, &st);
-	mode_t perm = st.st_mode;
-
-	return (perm & S_IRUSR) | (perm & S_IWUSR) | (perm & S_IXUSR)
-		| (perm & S_IRGRP) | (perm & S_IWGRP) | (perm & S_IXGRP)
-		| (perm & S_IROTH) | (perm & S_IWOTH) | (perm & S_IXOTH);
-}
-
 void delete_file(const char* path)
 {
 	send_syslog(LOG_INFO, "Proba skasowania %s", path);

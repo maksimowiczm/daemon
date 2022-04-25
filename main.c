@@ -163,6 +163,7 @@ void handle_signal(const int signum)
 
 int main(int argc, char* argv[])
 {
+	// Wczytanie argumentów
 	if (argc < 3)
 	{
 		fprintf(stderr, "Usage: %s [-b size] [-s time] [-l size] [-R] source_directory destination_directory\n",
@@ -225,6 +226,7 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	// Stworzenie demona
 	const pid_t pid = fork();
 
 	if (pid < 0)
@@ -234,13 +236,12 @@ int main(int argc, char* argv[])
 
 	signal(SIGUSR1, handle_signal);
 
-	syslog(LOG_INFO, "Starting daemon. Sleeping for %d seconds", sleep_time);
+	syslog(LOG_INFO, "Start demona. Uspanie na %d sekund", sleep_time);
 	sleep(sleep_time);
 
-	syslog(LOG_INFO, "Starting copying");
+	syslog(LOG_INFO, "Start kopiowania");
 	copy_and_delete_all_files(argv[optind], argv[optind + 1], buffor_size, large_file_size_limit);
-	syslog(LOG_INFO, "Copied");
-	syslog(LOG_INFO, "Exiting daemon");
+	syslog(LOG_INFO, "Skopiowane. Koniec demona.");
 
 	exit(EXIT_SUCCESS);
 }

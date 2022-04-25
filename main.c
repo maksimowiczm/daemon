@@ -22,6 +22,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 
 	char *src, *dst; // Ścieżki do plików
 
+	// Kopiowanie plików nieistniejących w folderze docelowym
 	for (int i = 0; i < no_of_source_files; i++) // Wszystkie pliki w folderze źródłowym są sprawdzane
 	{
 		const char* source_file_name = source_files_list[i]->d_name; // Nazwa pliku źródłowego
@@ -106,6 +107,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 		free(dst);
 	}
 
+	// Kasowanie plików nieistniejących w folderze źródłowym
 	for (int i = 0; i < no_of_dest_files; i++) // Wszystkie pliki w folderze docelowym są sprawdzane
 	{
 		const char* dest_file_name = dest_files_list[i]->d_name; // Nazwa pliku w folderze docelowym

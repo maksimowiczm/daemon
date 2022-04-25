@@ -1,6 +1,7 @@
 #include "files.h"
 #include "utils.h"
 
+// Kopiuje czas modyfikacji pliku do innego pliku
 void copy_file_dates(const char* from, const char* to)
 {
 	struct stat st;
@@ -119,11 +120,12 @@ void delete_directory(const char* path)
 	for (int i = 0; i < no_of_files; i++)
 	{
 		const char* file_name = files_list[i]->d_name;
-		src = concat_path(path, file_name);
 
 		if (skip_location(file_name))
 			continue;
 
+		src = concat_path(path, file_name);
+		// Rekurencyjne kasowanie folderów
 		if (is_directory(files_list[i]))
 			delete_directory(src);
 
@@ -132,5 +134,10 @@ void delete_directory(const char* path)
 	}
 
 	syslog(LOG_INFO, "deleted directory %s", path);
+
+
+	for (int i = 0; i < no_of_files; i++)
+		free(files_list[i]);
+
 	free(files_list);
 }

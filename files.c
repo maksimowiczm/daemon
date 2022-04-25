@@ -100,7 +100,7 @@ int get_permission(const char* path)
 void delete_file(const char* path)
 {
 	send_syslog(LOG_INFO, "Proba skasowania %s", path);
-	const int err = remove(path);
+	const int err = unlink(path);
 
 	if (err < 0)
 	{
@@ -133,11 +133,16 @@ void delete_directory(const char* path)
 		free(src);
 	}
 
-	send_syslog(LOG_INFO, "Skasowano folder %s", path);
-
-
 	for (int i = 0; i < no_of_files; i++)
 		free(files_list[i]);
 
 	free(files_list);
+
+	const int err = unlinkat(NULL, path, AT_REMOVEDIR);
+	if (err < 0)
+	{
+		fprintf(stderr, "delete_file() %s %s", path, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	send_syslog(LOG_INFO, "Skasowano folder %s", path);
 }

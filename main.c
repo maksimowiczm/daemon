@@ -142,8 +142,8 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 			// W zależności czy plik jest folderem czy zwykłym plikiem odpowiednie funkcje są uruchamiane
 			if (!is_regular_file(dst, 1))
 				delete_directory(dst);
-
-			delete_file(dst);
+			else
+				delete_file(dst);
 		}
 
 		free(dst);
@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
 	}
 
 	// Stworzenie demona
-	pid_t pid = fork();
+	/*pid_t pid = fork();
 
 	if (pid < 0)
 		exit(EXIT_FAILURE);
@@ -248,7 +248,7 @@ int main(int argc, char* argv[])
 	if (pid < 0)
 		exit(EXIT_FAILURE);
 	else if (pid > 0)
-		exit(EXIT_SUCCESS);
+		exit(EXIT_SUCCESS);*/
 
 
 	signal(SIGUSR1, handle_signal);

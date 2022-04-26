@@ -1,5 +1,5 @@
-﻿#include "files.h"
-#include "headers.h"
+﻿#include "headers.h"
+#include "files.h"
 #include "utils.h"
 
 // Tryby działania programu
@@ -36,10 +36,10 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 		src = concat_path(source_path, source_file_name); // Ścieżka do pliku źródłowego
 		dst = concat_path(destination_path, source_file_name); // Ścieżka do pliku docelowego
 
-		if (mode == RECURSIVE && is_directory(source_files_list[i])) // W trybie rekursywnym fodlery są kopiowane
+		if (mode == RECURSIVE && is_directory(source_files_list[i])) // W trybie rekursywnym foldery są kopiowane
 		{
 			DIR* dir = opendir(dst);
-			if (!dir) // Sprawdza czy folder istnieje
+			if (!dir) // Sprawdza czy folder istnieje w katalogu docelowym
 			{
 				const int prem = get_permission(src);
 				if (mkdir(dst, prem) < 0) // Jeśli nie istnieje tworzy nowy folder o takiej samej nazwie i uprawnieniach
@@ -52,9 +52,14 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 			}
 
 			free(dir);
-			copy_and_delete_all_files(src, dst, buffor_size, large_file_size_limit);
-			// Uruchomianie rekurencyjne funcji dla folderu
-			copy_file_dates(src, dst); // Zmiana daty modyfikacji po skopiowaniu na prawdiłową
+
+			// Porównuje czasy modyfikacji folderów
+			if (compare_files_times(src, dst))
+			{
+				// Uruchomianie rekurencyjne funcji dla folderu
+				copy_and_delete_all_files(src, dst, buffor_size, large_file_size_limit);
+				copy_file_dates(src, dst); // Zmiana daty modyfikacji po skopiowaniu na prawdiłową
+			}
 
 			free(dst);
 			free(src);
@@ -76,7 +81,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 
 			if (strcmp(source_file_name, dest_file_name) == 0) // Sprawdza czy pliki mają taką samą nazwę
 			{
-				was = 1; // Ustala czy plik był w folderze docelowym
+				was = 1; // Ustala że plik był w folderze docelowym
 				const long time = compare_files_times(src, dst); // Porównuje czasy modyfikacji plików
 
 				if (!time) // Jeśli pliki są identyczne nie są kopiowane

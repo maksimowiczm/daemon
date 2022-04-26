@@ -129,8 +129,9 @@ void delete_directory(const char* path)
 		// Rekurencyjne kasowanie folderów
 		if (is_directory(files_list[i]))
 			delete_directory(src);
+		else
+			delete_file(src);
 
-		delete_file(src);
 		free(src);
 	}
 

@@ -16,34 +16,39 @@
 // Kopiuje czas modyfikacji pliku do innego pliku
 void copy_file_dates(const char* from, const char* to)
 {
+	// Pobranie danych pliku
 	struct stat st;
 	stat(from, &st);
 	const long mtime = st.st_mtime;
 	struct utimbuf ubuf;
 	time(&ubuf.actime);
 	ubuf.modtime = mtime;
+
+	// Ustawienie czasu modyfikacji
 	const int err = utime(to, &ubuf);
 	if (err < 0)
 	{
-		fprintf(stderr, "copy_file_dates() utime() %s %s %s", from, to, strerror(errno));
+		send_syslog(LOG_ERR, "copy_file_dates() utime() %s %s %s", from, to, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 }
 
 void copy_file(const char* from, const char* to, const ssize_t buffor, const ssize_t large_file_size_limit)
 {
+	// Otworzenie pliku źródłowego
 	const int src = open(from, O_RDONLY);
 	if (src < 0)
 	{
-		fprintf(stderr, "copy_file() open(from) %s %s", from, strerror(errno));
+		send_syslog(LOG_ERR, "copy_file() open(from) %s %s", from, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
 	const int prem = get_permission(from);
+	// Otworzenie pliku docelowego z tymi samymi uprawnieniami co źródłowy
 	const int dst = open(to, O_WRONLY | O_CREAT | O_APPEND, prem);
 	if (dst < 0)
 	{
-		fprintf(stderr, "copy_file() open(to) %s %s", to, strerror(errno));
+		send_syslog(LOG_ERR, "copy_file() open(to) %s %s", to, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -58,7 +63,7 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 		char* addr = mmap(NULL, size, PROT_READ, MAP_PRIVATE, src, 0);
 		if (addr == MAP_FAILED)
 		{
-			fprintf(stderr, "copy_file() mmap() %s", from);
+			send_syslog(LOG_ERR, "copy_file() mmap() %s", from);
 			exit(EXIT_FAILURE);
 		}
 
@@ -84,13 +89,13 @@ void copy_file(const char* from, const char* to, const ssize_t buffor, const ssi
 	int err = close(src);
 	if (err < 0)
 	{
-		fprintf(stderr, "copy_file() close(src) %s", strerror(errno));
+		send_syslog(LOG_ERR, "copy_file() close(src) %s", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	err = close(dst);
 	if (err < 0)
 	{
-		fprintf(stderr, "copy_file() close(dst) %s", strerror(errno));
+		send_syslog(LOG_ERR, "copy_file() close(dst) %s", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -105,7 +110,7 @@ void delete_file(const char* path)
 
 	if (err < 0)
 	{
-		fprintf(stderr, "delete_file() %s %s", path, strerror(errno));
+		send_syslog(LOG_ERR, "delete_file() %s %s", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	send_syslog(LOG_INFO, "Skasowano %s", path);
@@ -113,20 +118,22 @@ void delete_file(const char* path)
 
 void delete_directory(const char* path)
 {
-	struct dirent** files_list;
-	const int no_of_files = scandir(path, &files_list, NULL, alphasort);
+	struct dirent** files_list; // Lista plików w folderze	
+	const int no_of_files = scandir(path, &files_list, NULL, alphasort); // Liczba plików w folderze
 	char* src;
-
 	send_syslog(LOG_INFO, "Proba skasowania folderu %s", path);
+
+	// Wszystkie pliki w folderze są usuwane
 	for (int i = 0; i < no_of_files; i++)
 	{
-		const char* file_name = files_list[i]->d_name;
+		const char* file_name = files_list[i]->d_name; // Nazwa pliku
 
-		if (skip_location(file_name))
+		if (skip_location(file_name)) // Foldery "." ".." są omijane
 			continue;
 
 		src = concat_path(path, file_name);
-		// Rekurencyjne kasowanie folderów
+
+		// Rekurencyjne usuwanie folderów
 		if (is_directory(files_list[i]))
 			delete_directory(src);
 		else
@@ -135,16 +142,17 @@ void delete_directory(const char* path)
 		free(src);
 	}
 
-	for (int i = 0; i < no_of_files; i++)
-		free(files_list[i]);
-
-	free(files_list);
-
+	// Usunięcie folderu po skasowaniu plików w znajdujących się w nim
 	const int err = unlinkat(NULL, path, AT_REMOVEDIR);
 	if (err < 0)
 	{
-		fprintf(stderr, "delete_file() %s %s", path, strerror(errno));
+		send_syslog(LOG_ERR, "delete_directory() %s %s", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	send_syslog(LOG_INFO, "Skasowano folder %s", path);
+
+	// Zwalnianie pamięci
+	for (int i = 0; i < no_of_files; i++)
+		free(files_list[i]);
+	free(files_list);
 }

@@ -24,7 +24,7 @@ int is_regular_file(const char* path, const int error)
 		if (!error)
 			return -1;
 
-		fprintf(stderr, "is_regular_file() %s %s", path, strerror(errno));
+		send_syslog(LOG_ERR, "is_regular_file() %s %s", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -68,14 +68,14 @@ long compare_files_times(const char* file1, const char* file2)
 	struct stat stat1;
 	if (stat(file1, &stat1) == -1)
 	{
-		fprintf(stderr, "compare_files_times() %s %s", file1, strerror(errno));
+		send_syslog(LOG_ERR, "compare_files_times() %s %s", file1, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
 	struct stat stat2;
 	if (stat(file2, &stat2) == -1)
 	{
-		fprintf(stderr, "compare_files_times() %s %s", file2, strerror(errno));
+		send_syslog(LOG_ERR, "compare_files_times() %s %s", file2, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 

@@ -44,7 +44,7 @@ void copy_and_delete_all_files(const char* source_path, const char* destination_
 				const int prem = get_permission(src);
 				if (mkdir(dst, prem) < 0) // Jeśli nie istnieje tworzy nowy folder o takiej samej nazwie i uprawnieniach
 				{
-					fprintf(stderr, "copy_and_delete_all_files() mkdir() %s %s", dst, strerror(errno));
+					send_syslog(LOG_ERR, "copy_and_delete_all_files() mkdir() %s %s", dst, strerror(errno));
 					exit(EXIT_FAILURE);
 				}
 

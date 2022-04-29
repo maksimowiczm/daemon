@@ -9,6 +9,13 @@ enum
 	RECURSIVE
 } mode = DEFAULT;
 
+/**
+ *  \brief Główna funkcja demona, wykonywująca kopię katalogu źródłowego do katalogu docelowego
+ *    \param source_path ścieżka do katalogu źródłowego
+ *    \param destination_path ścieżka do katalogu docelowego
+ *    \param buffor_size rozmiar buforu używanego do kopiowania plików
+ *    \param large_file_size_limit rozmiar, po którym plik jest traktowany jako duży
+ */
 void copy_and_delete_all_files(const char* source_path, const char* destination_path, const ssize_t buffor_size,
                                const ssize_t large_file_size_limit)
 {
